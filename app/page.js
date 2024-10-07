@@ -139,14 +139,15 @@ export default function Home() {
       const pantryItemsList = inventory.map(item => item.name).join(', ');
   
       if (pantryItemsList.trim() !== '') {
+        console.log('test1');
         const response = await fetch('api/generate-recipes', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json', 
           },
           body: JSON.stringify({ pantryItems: pantryItemsList }),
         });
-  
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
