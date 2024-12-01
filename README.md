@@ -26,4 +26,4 @@
 A live link will be added here once the site is operational.
 
 ## Demo
-[Youtube Link](https://youtu.be/1xDUebEPZEA)
+Heres a [Youtube Link](https://youtu.be/1xDUebEPZEA) that shows how the website functions!
