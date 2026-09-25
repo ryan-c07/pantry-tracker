@@ -20,4 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
 
-export {firestore}
+// False when the NEXT_PUBLIC_FIREBASE_* env vars are missing; Firestore calls would hang otherwise.
+const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
+
+export { firestore, isFirebaseConfigured };
