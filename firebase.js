@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -23,4 +24,8 @@ const firestore = getFirestore(app);
 // False when the NEXT_PUBLIC_FIREBASE_* env vars are missing; Firestore calls would hang otherwise.
 const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
-export { firestore, isFirebaseConfigured };
+// getAuth throws without an API key, so it is only created when configured.
+const auth = isFirebaseConfigured ? getAuth(app) : null;
+const googleProvider = new GoogleAuthProvider();
+
+export { firestore, auth, googleProvider, isFirebaseConfigured };

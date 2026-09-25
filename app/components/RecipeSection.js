@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Paper, Box, Stack, Typography, Button, Card, CardContent, CardActions, Link, Alert, Skeleton } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { auth } from '@/firebase';
 
 export default function RecipeSection({ itemNames }) {
   const [recipes, setRecipes] = useState([]);
@@ -13,9 +14,11 @@ export default function RecipeSection({ itemNames }) {
     setLoading(true);
     setError('');
     try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Please sign in again.');
       const response = await fetch('/api/generate-recipes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ pantryItems: itemNames }),
       });
       const data = await response.json().catch(() => ({}));

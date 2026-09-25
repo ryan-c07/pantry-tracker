@@ -1,13 +1,39 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 // Server-only key; NEXT_PUBLIC_ fallback kept so existing deployments keep working.
 const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
+const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+// Google's public keys for Firebase Auth ID tokens; jose caches them between requests.
+const firebaseKeys = createRemoteJWKSet(
+  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
+);
+
+// Returns the Firebase user id for a valid ID token, or null.
+async function verifyFirebaseToken(req) {
+  const token = req.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
+  if (!token || !projectId) return null;
+  try {
+    const { payload } = await jwtVerify(token, firebaseKeys, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+    });
+    return typeof payload.sub === 'string' && payload.sub ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
 const MAX_ITEMS = 100;
 const MAX_ITEM_LENGTH = 60;
 
 export async function POST(req) {
+  if (!(await verifyFirebaseToken(req))) {
+    return Response.json({ error: 'Please sign in to generate recipes.' }, { status: 401 });
+  }
   if (!apiKey) {
     return Response.json({ error: 'Recipe generation is not configured (missing GEMINI_API_KEY).' }, { status: 500 });
   }
