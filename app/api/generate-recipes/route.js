@@ -5,6 +5,9 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
+// Allow slow Gemini responses instead of the platform's short default timeout (504).
+export const maxDuration = 60;
+
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
 // Google's public keys for Firebase Auth ID tokens; jose caches them between requests.
@@ -60,7 +63,8 @@ export async function POST(req) {
   try {
     const model = new GoogleGenerativeAI(apiKey).getGenerativeModel({
       model: modelName,
-      generationConfig: { responseMimeType: 'application/json' },
+      // Thinking isn't needed for recipe ideas and roughly triples response time.
+      generationConfig: { responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } },
     });
     const prompt = `You are a helpful cook. Given these pantry items: ${items.join(', ')}.
 Suggest 3 to 5 recipes that mainly use these ingredients.

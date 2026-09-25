@@ -22,7 +22,11 @@ export default function RecipeSection({ itemNames }) {
         body: JSON.stringify({ pantryItems: itemNames }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+      if (!response.ok) {
+        throw new Error(data.error || (response.status === 504
+          ? 'Recipe generation took too long. Please try again.'
+          : `Request failed (${response.status})`));
+      }
       setRecipes(data.recipes ?? []);
       if (!data.recipes?.length) setError('No recipes came back. Try again.');
     } catch (err) {
